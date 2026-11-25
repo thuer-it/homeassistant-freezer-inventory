@@ -2,6 +2,15 @@ import qrcode from "qrcode-generator";
 import type { FreezerItem } from "./types";
 import { formatDate, shortId } from "./localize";
 import type { LocalizeFunc } from "./localize";
+import {
+  DEFAULT_LABEL_OPTIONS,
+  drawJarCanvas,
+  drawTextCanvas,
+  jarKind,
+  labelPixels,
+  pxPerMm,
+  type LabelOptions,
+} from "./label-designs";
 
 export const QR_PREFIX = "fi:";
 export const QR_LINK_PARAM = "fi_item";
@@ -78,13 +87,27 @@ export function parseLabelFormat(value: string | undefined): LabelFormat {
   return { width: Number(match[1]), height: Number(match[2]) };
 }
 
-function labelHtml(item: FreezerItem, l: LocalizeFunc, qrData: QrData): string {
+function labelHtml(
+  item: FreezerItem,
+  l: LocalizeFunc,
+  qrData: QrData,
+  format: LabelFormat,
+  options: LabelOptions
+): string {
+  if (jarKind(item)) {
+    const src = drawLabelCanvas(item, l, format, qrData, options).toDataURL("image/png");
+    return `<div class="label"><img src="${src}" style="width:100%;height:100%;object-fit:contain"></div>`;
+  }
   const amount: string[] = [];
   if (item.weight != null) amount.push(`${item.weight} ${item.unit || "g"}`);
   if (item.pieces != null) amount.push(`${item.pieces} ${l("pieces_short")}`);
   return `
     <div class="label">
-      <div class="qr">${qrSvg(qrData(item))}<div class="id">${shortId(item.id)}</div></div>
+      ${
+        options.qr
+          ? `<div class="qr">${qrSvg(qrData(item))}<div class="id">${shortId(item.id)}</div></div>`
+          : ""
+      }
       <div class="text">
         <div class="name">${escapeHtml(item.product_name)}</div>
         <div class="meta">${formatDate(item)}${
@@ -172,7 +195,8 @@ export function printLabels(
   items: FreezerItem[],
   l: LocalizeFunc,
   format: LabelFormat = { width: null, height: null },
-  qrData: QrData = qrPayload
+  qrData: QrData = qrPayload,
+  options: LabelOptions = DEFAULT_LABEL_OPTIONS
 ): void {
   const iframe = document.createElement("iframe");
   iframe.style.position = "fixed";
@@ -197,7 +221,7 @@ export function printLabels(
 <title>Freezer Inventory Labels</title>
 <style>${css}</style>
 </head>
-<body>${items.map((item) => labelHtml(item, l, qrData)).join("")}</body>
+<body>${items.map((item) => labelHtml(item, l, qrData, format, options)).join("")}</body>
 </html>`);
   doc.close();
 
@@ -225,18 +249,22 @@ export function printUnsupported(): boolean {
 // Image mode: render the label as a PNG for label-printer apps (Niimbot,
 // Brother iPrint, …) that print images instead of exposing a print driver.
 
-const PX_PER_MM = 8; // ≈203 dpi, the native resolution of most label printers
+const PX_PER_MM = 8; // ≈203 dpi, used by the declarative Niimbot payload
 
 function drawLabelCanvas(
   item: FreezerItem,
   l: LocalizeFunc,
   format: LabelFormat,
-  qrData: QrData
+  qrData: QrData,
+  options: LabelOptions = DEFAULT_LABEL_OPTIONS
 ): HTMLCanvasElement {
   const widthMm = format.width ?? 50;
   const heightMm = format.height ?? 30;
-  const width = widthMm * PX_PER_MM;
-  const height = heightMm * PX_PER_MM;
+  const kind = jarKind(item);
+  if (kind) return drawJarCanvas(item, l, kind, widthMm, heightMm, options);
+  if (!options.qr) return drawTextCanvas(item, l, widthMm, heightMm, options);
+  const ppmm = pxPerMm(options.dpi);
+  const { width, height } = labelPixels(widthMm, heightMm, options.dpi);
   const thin = heightMm <= 20;
 
   const canvas = document.createElement("canvas");
@@ -247,7 +275,7 @@ function drawLabelCanvas(
   ctx.fillRect(0, 0, width, height);
 
   // QR on the left: fits the height but never eats the text's width
-  const pad = Math.round((thin ? 1 : 2) * PX_PER_MM);
+  const pad = Math.round((thin ? 1 : 2) * ppmm);
   const qrSize = Math.min(height - 2 * pad, Math.round(width * 0.36));
   const qrY = Math.round((height - qrSize) / 2);
   const qr = qrcode(0, "M");
@@ -301,15 +329,15 @@ function drawLabelCanvas(
   const meta = `${formatDate(item)}${amount.length ? " · " + amount.join(" · ") : ""}`;
 
   const lines = [
-    fitLine(item.product_name, Math.round((thin ? 2.9 : 4) * PX_PER_MM), "700"),
-    fitLine(meta, Math.round((thin ? 2.4 : 3) * PX_PER_MM), ""),
+    fitLine(item.product_name, Math.round((thin ? 2.9 : 4) * ppmm), "700"),
+    fitLine(meta, Math.round((thin ? 2.4 : 3) * ppmm), ""),
   ];
   if (item.note && !thin) {
-    lines.push(fitLine(item.note, Math.round(2.4 * PX_PER_MM), "italic"));
+    lines.push(fitLine(item.note, Math.round(2.4 * ppmm), "italic"));
   }
 
   // Vertically center the text block next to the QR
-  const gap = Math.round(0.9 * PX_PER_MM);
+  const gap = Math.round(0.9 * ppmm);
   const blockHeight =
     lines.reduce((sum, line) => sum + line.size, 0) + gap * (lines.length - 1);
   let y = Math.max(pad, Math.round((height - blockHeight) / 2));
@@ -322,7 +350,7 @@ function drawLabelCanvas(
   }
   if (!thin) {
     // Tiny id under the QR so a failed print can be matched to its item
-    const idSize = Math.round(1.6 * PX_PER_MM);
+    const idSize = Math.round(1.6 * ppmm);
     ctx.font = `${idSize}px monospace`;
     ctx.fillStyle = "#555";
     const idText = shortId(item.id);
@@ -377,11 +405,12 @@ export async function shareLabelImages(
   items: FreezerItem[],
   l: LocalizeFunc,
   format: LabelFormat,
-  qrData: QrData = qrPayload
+  qrData: QrData = qrPayload,
+  options: LabelOptions = DEFAULT_LABEL_OPTIONS
 ): Promise<"shared" | "downloaded"> {
   const rendered = items.map((item) => ({
     name: labelFileName(item),
-    dataUrl: drawLabelCanvas(item, l, format, qrData).toDataURL("image/png"),
+    dataUrl: drawLabelCanvas(item, l, format, qrData, options).toDataURL("image/png"),
   }));
 
   if (rendered.length === 1 && typeof navigator.share === "function") {
@@ -446,10 +475,29 @@ export function niimbotPrintData(
   l: LocalizeFunc,
   format: LabelFormat,
   font?: string,
-  qrData: QrData = qrPayload
+  qrData: QrData = qrPayload,
+  options: LabelOptions = DEFAULT_LABEL_OPTIONS
 ): NiimbotPrintData {
   const widthMm = format.width ?? 50;
   const heightMm = format.height ?? 30;
+  // Jar labels, labels without QR and 300 dpi printers: send a finished image
+  if (jarKind(item) || !options.qr || options.dpi === 300) {
+    const canvas = drawLabelCanvas(item, l, format, qrData, options);
+    return {
+      payload: [
+        {
+          type: "dlimg",
+          url: canvas.toDataURL("image/png"),
+          x: 0,
+          y: 0,
+          xsize: canvas.width,
+          ysize: canvas.height,
+        },
+      ],
+      width: canvas.width,
+      height: canvas.height,
+    };
+  }
   const width = widthMm * PX_PER_MM;
   const height = heightMm * PX_PER_MM;
   const thin = heightMm <= 20;

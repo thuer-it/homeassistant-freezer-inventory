@@ -132,6 +132,8 @@ language: en           # cs | en | de | de_at (defaults to the integration langu
 auto_close: 60         # close the popup after N seconds of inactivity
 label_format: a4       # a4 | 50x30 | 40x30 | 40x12 | 30x15 | any "WxH" in mm
 label_action: print    # print (system dialog) | image (PNG) | niimbot (direct print)
+label_dpi: 203         # 300 for 300 dpi printers (Niimbot B1 Pro)
+label_qr: true         # false = labels without QR code
 label_printer: ""      # niimbot only: device_id (only needed with multiple printers)
 label_font: ""         # niimbot only: TTF name from www/fonts (for special glyphs)
 qr_content: id         # id (compact) | link (web URL) | app (companion-app deep link)
@@ -155,6 +157,8 @@ Note: most camera apps open both forms, but some only make `http(s)` links tappa
 - QR **scanning** uses the native BarcodeDetector where available and a bundled decoder everywhere else — it works in Chrome, Firefox, Safari and the companion app alike (HTTPS required for the camera)
 - `label_action: image` renders the label as a **PNG image** and opens the share sheet (or downloads the file) — share it straight into the **Niimbot app** (or any label-printer app) and print from there. This mode also works inside the Home Assistant companion app.
 - The regular print dialog does not work in the companion app (its WebView has no print support) — the card tells you so instead of failing silently; use a browser or the image mode.
+
+Items whose category name contains *Jam / Marmelade / Konfitüre* or *Syrup / Sirup* get a jar label with line art (strawberry, apricot, elderflower, otherwise a jar or bottle). The note replaces the "homemade" line.
 
 ## Weight and pieces
 

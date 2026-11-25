@@ -29,6 +29,8 @@ const TEXTS: Record<string, Record<string, string>> = {
     auto_close: "Automaticky zavřít po nečinnosti (sekundy, prázdné = vypnuto)",
     label_format: "Formát štítku",
     label_a4: "Arch A4 (88×36 mm)",
+    label_dpi: "Rozlišení tiskárny",
+    label_qr: "QR kód na štítku",
     label_action: "Tisk štítků",
     label_print: "Tisková fronta (běžná tiskárna / driver)",
     label_image: "Obrázek PNG pro aplikaci tiskárny",
@@ -65,6 +67,8 @@ const TEXTS: Record<string, Record<string, string>> = {
     auto_close: "Auto-close after inactivity (seconds, empty = off)",
     label_format: "Label format",
     label_a4: "A4 sheet (88×36 mm)",
+    label_dpi: "Printer resolution",
+    label_qr: "QR code on label",
     label_action: "Label printing",
     label_print: "Print queue (regular printer / driver)",
     label_image: "PNG image for a label-printer app",
@@ -101,6 +105,8 @@ const TEXTS: Record<string, Record<string, string>> = {
     auto_close: "Bei Inaktivität automatisch schließen (Sekunden, leer = aus)",
     label_format: "Etikettenformat",
     label_a4: "A4-Bogen (88×36 mm)",
+    label_dpi: "Druckerauflösung",
+    label_qr: "QR-Code auf dem Etikett",
     label_action: "Etikettendruck",
     label_print: "Druckwarteschlange (normaler Drucker / Treiber)",
     label_image: "PNG-Bild für eine Etikettendrucker-App",
@@ -328,7 +334,7 @@ class FreezerInventoryCardEditor extends LitElement {
             }}
           >
             <option value="a4" ?selected=${!c.label_format}>${t.label_a4}</option>
-            ${["50x30", "40x30", "40x12", "30x15"].map(
+            ${["50x30", "50x25", "40x30", "30x20", "40x12", "30x15"].map(
               (size) => html`
                 <option value=${size} ?selected=${c.label_format === size}>
                   ${size.replace("x", " × ")} mm
@@ -336,6 +342,34 @@ class FreezerInventoryCardEditor extends LitElement {
               `
             )}
           </select>
+        </div>
+
+        <div class="field">
+          <label>${t.label_dpi}</label>
+          <select
+            @change=${(e: Event) =>
+              this._update({
+                label_dpi:
+                  (e.target as HTMLSelectElement).value === "300" ? 300 : undefined,
+              })}
+          >
+            <option value="203" ?selected=${c.label_dpi !== 300}>203 dpi</option>
+            <option value="300" ?selected=${c.label_dpi === 300}>300 dpi (B1 Pro)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>
+            <input
+              type="checkbox"
+              .checked=${c.label_qr !== false}
+              @change=${(e: Event) =>
+                this._update({
+                  label_qr: (e.target as HTMLInputElement).checked ? undefined : false,
+                })}
+            />
+            ${t.label_qr}
+          </label>
         </div>
 
         <div class="field">

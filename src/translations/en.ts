@@ -147,4 +147,5 @@ export const en: Record<string, string> = {
   month_10: "October",
   month_11: "November",
   month_12: "December",
+  jar_homemade: "homemade",
 };

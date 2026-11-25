@@ -148,4 +148,5 @@ export const de_at: Record<string, string> = {
   month_10: "Oktober",
   month_11: "November",
   month_12: "Dezember",
+  jar_homemade: "hausgemacht",
 };

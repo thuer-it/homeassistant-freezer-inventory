@@ -186,6 +186,14 @@ class FreezerInventoryCard extends LitElement {
     return qrPayload;
   }
 
+  private get _labelOptions() {
+    return {
+      dpi: this._config.label_dpi === 300 ? 300 : 203,
+      qr: this._config.label_qr !== false,
+      language: this._config.language || this._integration?.language || "en",
+    };
+  }
+
   /** Deep link (?fi_item=<id> from a scanned label): open that item. */
   private _deepLinkChecked = false;
 
@@ -605,7 +613,8 @@ class FreezerInventoryCard extends LitElement {
             l,
             format,
             this._config.label_font,
-            this._qrData
+            this._qrData,
+            this._labelOptions
           );
           await this.hass.callService(
             "niimbot",
@@ -631,7 +640,7 @@ class FreezerInventoryCard extends LitElement {
     if (this._config.label_action === "image") {
       // PNG for label-printer apps (Niimbot & co.) via share sheet/download
       try {
-        const delivery = await shareLabelImages(items, l, format, this._qrData);
+        const delivery = await shareLabelImages(items, l, format, this._qrData, this._labelOptions);
         if (delivery === "downloaded") {
           this._showToast(l("label_downloaded"));
         }
@@ -644,7 +653,7 @@ class FreezerInventoryCard extends LitElement {
       this._showToast(l("print_unsupported_app"));
       return;
     }
-    printLabels(items, l, format, this._qrData);
+    printLabels(items, l, format, this._qrData, this._labelOptions);
   }
 
   private _onScanFound(e: CustomEvent<{ itemId: string }>) {

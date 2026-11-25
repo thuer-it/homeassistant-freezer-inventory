@@ -107,6 +107,10 @@ export interface CardConfig {
    * apps; "niimbot" — direct print via the hass-niimbot integration service.
    */
   label_action?: "print" | "image" | "niimbot";
+  /** Printer resolution for label images: 203 (default) or 300 (B1 Pro). */
+  label_dpi?: 203 | 300;
+  /** false = labels without QR code (they cannot be scanned afterwards). */
+  label_qr?: boolean;
   /** Optional TTF font name passed to niimbot text elements (www/fonts). */
   label_font?: string;
   /** Optional niimbot printer device_id (only needed with multiple printers). */

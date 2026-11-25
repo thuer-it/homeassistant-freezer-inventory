@@ -146,4 +146,5 @@ export const cs: Record<string, string> = {
   month_10: "Říjen",
   month_11: "Listopad",
   month_12: "Prosinec",
+  jar_homemade: "domácí",
 };
