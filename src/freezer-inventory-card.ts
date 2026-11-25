@@ -42,12 +42,13 @@ import {
   shareLabelImages,
 } from "./labels";
 
-const CARD_VERSION = "1.6.1";
+const CARD_VERSION = "1.6.1-thuer.1";
+const forkBadge = html`<span class="fork-badge">thuer-it</span>`;
 const DEFAULT_FREEZER = "main_freezer";
 const UNDO_TIMEOUT = 6000;
 
 console.info(
-  `%c FREEZER-INVENTORY-CARD %c ${CARD_VERSION} `,
+  `%c FREEZER-INVENTORY-CARD (thuer-it) %c ${CARD_VERSION} `,
   "color: white; background: #03a9f4; font-weight: 700;",
   "color: #03a9f4; background: white; font-weight: 700;"
 );
@@ -698,7 +699,7 @@ class FreezerInventoryCard extends LitElement {
             ${iconTemplate(this._config.icon, "mdi:chart-box-outline")}
           </span>
           <span class="tile-text">
-            <span class="tile-name">${name}</span>
+            <span class="tile-name">${name} ${forkBadge}</span>
             <span class="tile-count">${l("stats_monthly")}</span>
           </span>
         </div>
@@ -726,7 +727,7 @@ class FreezerInventoryCard extends LitElement {
             ${iconTemplate(this._config.icon, "mdi:snowflake")}
           </span>
           <span class="tile-text">
-            <span class="tile-name">${name}</span>
+            <span class="tile-name">${name} ${forkBadge}</span>
             ${this._config.show_count !== false
               ? html`<span class="tile-count"
                   >${itemCountText(l, count)}</span
@@ -748,7 +749,7 @@ class FreezerInventoryCard extends LitElement {
             ${iconTemplate(this._config.icon, "mdi:snowflake")}
           </span>
           <span class="tile-text">
-            <span class="tile-name">${name}</span>
+            <span class="tile-name">${name} ${forkBadge}</span>
             ${this._config.show_count !== false
               ? html`<span class="tile-count"
                   >${itemCountText(l, this._items.length)}</span
@@ -953,7 +954,7 @@ class FreezerInventoryCard extends LitElement {
           tabindex="-1"
         >
           <div class="dialog-header">
-            <h1 class="dialog-title">${name}</h1>
+            <h1 class="dialog-title">${name} ${forkBadge}</h1>
             <button
               class="close-btn"
               aria-label=${l("close")}
@@ -1001,6 +1002,18 @@ class FreezerInventoryCard extends LitElement {
 
       .card-error {
         margin: 12px;
+      }
+
+      .fork-badge {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 8px;
+        background: #e65100;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 16px;
+        vertical-align: middle;
       }
 
       .tile,
@@ -1192,7 +1205,7 @@ declare global {
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "freezer-inventory-card",
-  name: "Freezer Inventory Card",
+  name: "Freezer Inventory Card (thuer-it)",
   description:
     "Touch-friendly freezer inventory card for the Freezer Inventory integration.",
   preview: false,

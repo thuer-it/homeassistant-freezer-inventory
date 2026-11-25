@@ -1,6 +1,6 @@
 {
   "domain": "freezer_inventory",
-  "name": "Freezer Inventory",
+  "name": "Freezer Inventory (thuer-it)",
   "codeowners": ["@nikopol666"],
   "config_flow": true,
   "dependencies": ["http", "websocket_api", "frontend", "lovelace"],
@@ -10,5 +10,5 @@
   "issue_tracker": "https://github.com/nikopol666/homeassistant-freezer-inventory/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "1.6.1"
+  "version": "1.6.1-thuer.1"
 }
