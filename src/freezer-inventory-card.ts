@@ -42,7 +42,7 @@ import {
   shareLabelImages,
 } from "./labels";
 
-const CARD_VERSION = "1.6.1-thuer.1";
+const CARD_VERSION = "1.6.1-thuer.2";
 const forkBadge = html`<span class="fork-badge">thuer-it</span>`;
 const DEFAULT_FREEZER = "main_freezer";
 const UNDO_TIMEOUT = 6000;
@@ -442,6 +442,8 @@ class FreezerInventoryCard extends LitElement {
         this._showToast(l("item_updated"));
       }
     } else {
+      // capture before _backToList() clears the selection
+      const product = this._customProduct ? null : this._pickedProduct;
       const data = {
         freezer_id: this._freezerId,
         product_id: this._customProduct ? undefined : this._pickedProduct?.id,
@@ -477,7 +479,6 @@ class FreezerInventoryCard extends LitElement {
         this._showToast(`${l("added_confirmation")} ${prefix}${label}`);
         if (printAfter && createdIds.length) {
           // One label per created package, built from the submitted values
-          const product = this._customProduct ? null : this._pickedProduct;
           const category = product?.category_id
             ? this._categories.find((c) => c.id === product.category_id)
             : undefined;
