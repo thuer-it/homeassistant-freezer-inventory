@@ -48,6 +48,14 @@ _UNIT_SELECTOR = selector.SelectSelector(
 )
 
 
+def default_language(language: str | None, country: str | None) -> str:
+    """Preselect the language configured in Home Assistant."""
+    base = (language or "").split("-")[0].lower()
+    if base == "de":
+        return "de_at" if country == "AT" else "de"
+    return base if base in LANGUAGES else "en"
+
+
 class FreezerInventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial configuration."""
 
@@ -78,7 +86,9 @@ class FreezerInventoryConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
         language = (
-            user_input[CONF_LANGUAGE] if user_input is not None else DEFAULT_LANGUAGE
+            user_input[CONF_LANGUAGE]
+            if user_input is not None
+            else default_language(self.hass.config.language, self.hass.config.country)
         )
         schema = vol.Schema(
             {

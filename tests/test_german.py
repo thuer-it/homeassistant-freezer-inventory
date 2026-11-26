@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from custom_components.freezer_inventory import default_catalog
+from custom_components.freezer_inventory.config_flow import default_language
 from custom_components.freezer_inventory.const import DEFAULT_FREEZER_NAMES, LANGUAGES
 
 COMPONENT = Path(__file__).parent.parent / "custom_components" / "freezer_inventory"
@@ -54,3 +55,18 @@ def test_language_selector_lists_all_languages() -> None:
     for name in ("strings.json", "translations/en.json", "translations/de.json"):
         data = json.loads((COMPONENT / name).read_text("utf-8"))
         assert set(data["selector"]["language"]["options"]) == set(LANGUAGES)
+
+
+@pytest.mark.parametrize(
+    ("language", "country", "expected"),
+    [
+        ("de", "AT", "de_at"),
+        ("de", "DE", "de"),
+        ("de-CH", "CH", "de"),
+        ("cs", "CZ", "cs"),
+        ("fr", "FR", "en"),
+        (None, None, "en"),
+    ],
+)
+def test_default_language_follows_home_assistant(language, country, expected):
+    assert default_language(language, country) == expected
