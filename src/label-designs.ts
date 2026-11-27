@@ -585,15 +585,6 @@ export function drawJarCanvas(
   const line = 0.35 * u;
 
   ctx.lineWidth = line;
-  const m = 0.8 * u;
-  const r = 2.5 * u;
-  ctx.beginPath();
-  ctx.moveTo(m + r, m);
-  ctx.arcTo(width - m, m, width - m, height - m, r);
-  ctx.arcTo(width - m, height - m, m, height - m, r);
-  ctx.arcTo(m, height - m, m, m, r);
-  ctx.arcTo(m, m, width - m, m, r);
-  ctx.stroke();
 
   const icon = Math.min(18 * ux, 18 * uy);
   drawIcon(ctx, item.product_name, kind, 2.5 * ux, (height - icon) / 2, icon, line);

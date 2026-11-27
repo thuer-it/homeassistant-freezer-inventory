@@ -1,6 +1,6 @@
 {
   "name": "freezer-inventory-card",
-  "version": "1.6.1-thuer.2",
+  "version": "1.6.1-thuer.3",
   "description": "Lovelace card for the Freezer Inventory Home Assistant integration",
   "license": "MIT",
   "type": "module",
