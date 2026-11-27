@@ -42,7 +42,7 @@ import {
   shareLabelImages,
 } from "./labels";
 
-const CARD_VERSION = "1.6.1-thuer.4";
+const CARD_VERSION = "1.6.1-thuer.5";
 const forkBadge = html`<span class="fork-badge">thuer-it</span>`;
 const DEFAULT_FREEZER = "main_freezer";
 const UNDO_TIMEOUT = 6000;

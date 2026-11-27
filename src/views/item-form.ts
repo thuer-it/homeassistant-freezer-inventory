@@ -534,12 +534,14 @@ export class FiItemForm extends LitElement {
         :host([touch]) .row-of-buttons {
           flex-direction: row-reverse;
           justify-content: flex-start;
+          flex-wrap: wrap;
           gap: 12px;
         }
 
         :host([touch]) .row-of-buttons .btn {
+          flex: 1 1 160px;
           width: auto;
-          min-width: 220px;
+          min-width: 0;
         }
       }
     `,
