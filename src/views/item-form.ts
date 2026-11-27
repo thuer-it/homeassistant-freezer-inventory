@@ -24,6 +24,7 @@ export class FiItemForm extends LitElement {
   /** Existing item when editing (null = add mode). */
   @property({ attribute: false }) item: FreezerItem | null = null;
   @property({ attribute: false }) submitting = false;
+  @property({ attribute: false }) allowPrintOnly = false;
   @property({ attribute: false }) errorText = "";
 
   @state() private _name = "";
@@ -89,6 +90,7 @@ export class FiItemForm extends LitElement {
   }
 
   private _printAfter = false;
+  private _printOnly = false;
 
   private _submit() {
     const l = this.localize;
@@ -148,7 +150,11 @@ export class FiItemForm extends LitElement {
     if (this._isEdit) {
       result.original_weight = originalWeight;
     }
-    fireEvent(this, "fi-form-submit", { result, print: this._printAfter });
+    fireEvent(this, "fi-form-submit", {
+      result,
+      print: this._printAfter,
+      printOnly: this._printOnly,
+    });
     this._printAfter = false;
   }
 
@@ -405,6 +411,7 @@ export class FiItemForm extends LitElement {
           ?disabled=${this.submitting}
           @click=${() => {
             this._printAfter = false;
+            this._printOnly = false;
             this._submit();
           }}
         >
@@ -417,11 +424,25 @@ export class FiItemForm extends LitElement {
                 ?disabled=${this.submitting}
                 @click=${() => {
                   this._printAfter = true;
+                  this._printOnly = false;
                   this._submit();
                 }}
               >
                 ${l("add_and_print")}
               </button>
+              ${this.allowPrintOnly
+                ? html`<button
+                    class="btn btn-outline"
+                    ?disabled=${this.submitting}
+                    @click=${() => {
+                      this._printAfter = false;
+                      this._printOnly = true;
+                      this._submit();
+                    }}
+                  >
+                    ${l("print_only")}
+                  </button>`
+                : nothing}
             `
           : nothing}
         <button

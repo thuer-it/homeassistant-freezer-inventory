@@ -38,6 +38,7 @@ export const de_at: Record<string, string> = {
   quantity: "Anzahl Packerl",
   add_to_freezer: "IN DEN TIEFKÜHLER",
   add_and_print: "EINLAGERN & ETIKETTEN DRUCKEN",
+  print_only: "NUR DRUCKEN",
   save: "SPEICHERN",
   cancel: "ABBRECHEN",
   confirm: "BESTÄTIGEN",

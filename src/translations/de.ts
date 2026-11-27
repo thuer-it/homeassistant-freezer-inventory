@@ -38,6 +38,7 @@ export const de: Record<string, string> = {
   quantity: "Anzahl Packungen",
   add_to_freezer: "IN DEN GEFRIERSCHRANK",
   add_and_print: "EINLAGERN & ETIKETTEN DRUCKEN",
+  print_only: "NUR DRUCKEN",
   save: "SPEICHERN",
   cancel: "ABBRECHEN",
   confirm: "BESTÄTIGEN",

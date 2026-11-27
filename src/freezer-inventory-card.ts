@@ -42,7 +42,7 @@ import {
   shareLabelImages,
 } from "./labels";
 
-const CARD_VERSION = "1.6.1-thuer.3";
+const CARD_VERSION = "1.6.1-thuer.4";
 const forkBadge = html`<span class="fork-badge">thuer-it</span>`;
 const DEFAULT_FREEZER = "main_freezer";
 const UNDO_TIMEOUT = 6000;
@@ -417,7 +417,7 @@ class FreezerInventoryCard extends LitElement {
   // Event handlers from views
 
   private async _onFormSubmit(
-    e: CustomEvent<{ result: ItemFormResult; print?: boolean }>
+    e: CustomEvent<{ result: ItemFormResult; print?: boolean; printOnly?: boolean }>
   ) {
     const result = e.detail.result;
     const printAfter = e.detail.print === true;
@@ -444,6 +444,12 @@ class FreezerInventoryCard extends LitElement {
     } else {
       // capture before _backToList() clears the selection
       const product = this._customProduct ? null : this._pickedProduct;
+      if (e.detail.printOnly) {
+        // labels only, nothing is stored; the form stays open
+        const ids = Array.from({ length: result.quantity }, () => "");
+        await this._print(this._labelItems(ids, result, product));
+        return;
+      }
       const data = {
         freezer_id: this._freezerId,
         product_id: this._customProduct ? undefined : this._pickedProduct?.id,
@@ -478,31 +484,38 @@ class FreezerInventoryCard extends LitElement {
         this._backToList();
         this._showToast(`${l("added_confirmation")} ${prefix}${label}`);
         if (printAfter && createdIds.length) {
-          // One label per created package, built from the submitted values
-          const category = product?.category_id
-            ? this._categories.find((c) => c.id === product.category_id)
-            : undefined;
-          const created: FreezerItem[] = createdIds.map((id) => ({
-            id,
-            product_id: product?.id ?? null,
-            product_name: result.product_name,
-            category_id: category?.id ?? null,
-            category_name: category?.name ?? null,
-            month: result.month,
-            year: result.year,
-            weight: result.weight,
-            original_weight: result.weight,
-            pieces: result.pieces,
-            original_pieces: result.pieces,
-            unit: "g",
-            note: result.note,
-            created_at: "",
-            updated_at: "",
-          }));
-          await this._print(created);
+          await this._print(this._labelItems(createdIds, result, product));
         }
       }
     }
+  }
+
+  /** One label per package, built from the submitted form values. */
+  private _labelItems(
+    ids: string[],
+    result: ItemFormResult,
+    product: typeof this._pickedProduct
+  ): FreezerItem[] {
+    const category = product?.category_id
+      ? this._categories.find((c) => c.id === product.category_id)
+      : undefined;
+    return ids.map((id) => ({
+      id,
+      product_id: product?.id ?? null,
+      product_name: result.product_name,
+      category_id: category?.id ?? null,
+      category_name: category?.name ?? null,
+      month: result.month,
+      year: result.year,
+      weight: result.weight,
+      original_weight: result.weight,
+      pieces: result.pieces,
+      original_pieces: result.pieces,
+      unit: "g",
+      note: result.note,
+      created_at: "",
+      updated_at: "",
+    }));
   }
 
   private async _onRemoveAll() {
@@ -829,6 +842,7 @@ class FreezerInventoryCard extends LitElement {
             .product=${this._view === "edit" ? null : this._pickedProduct}
             .item=${this._view === "edit" ? this._selectedItem : null}
             .submitting=${this._busy}
+            .allowPrintOnly=${this._config.label_qr === false}
             .errorText=${this._errorText}
             @fi-form-submit=${this._onFormSubmit}
             @fi-form-cancel=${() => this._backToList()}
